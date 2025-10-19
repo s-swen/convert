@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: StatefulSet           # 🔹 Changed from Deployment to StatefulSet
+metadata:
+  name: mysql
+spec:
+  serviceName: "mysql"       # 🔹 Required for StatefulSet
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: rootpassword
+            - name: MYSQL_DATABASE
+              value: auth
+            - name: MYSQL_USER
+              value: auth_user
+            - name: MYSQL_PASSWORD
+              value: Aauth123
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
+  volumeClaimTemplates:       # 🔹 Added for StatefulSet persistence
+    - metadata:
+        name: mysql-storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  clusterIP: None            # 🔹 Headless service required for StatefulSet
+  selector:
+    app: mysql
+  ports:
+    - port: 3306
+      targetPort: 3306
+      
+
