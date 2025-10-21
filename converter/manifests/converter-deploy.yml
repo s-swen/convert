@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: converter
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: converter
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+  template:
+    metadata:
+      labels:
+        app: converter
+    spec:
+      containers:
+        - name: converter
+          image: zoeharris168/converter
+          envFrom:
+            - configMapRef:
+                name: converter-configmap
+            - secretRef:
+                name: converter-secret
