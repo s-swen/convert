@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gateway-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"        # Allow unlimited upload size (0 = no limit)
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"   # Allow up to 10 minutes for server response
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"   # Allow up to 10 minutes for client uploads
+spec:
+  rules:
+    - host: mp3converter.com                                # Domain that routes to your gateway
+      http:
+        paths:
+          - path: /                                         # Route all requests under `/`
+            pathType: Prefix
+            backend:
+              service:
+                name: gateway                               # Target Service inside cluster
+                port:
+                  number: 8080                              # Target Service port
