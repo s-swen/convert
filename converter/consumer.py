@@ -15,7 +15,7 @@ def main():
     try:
         # 🍃 MongoDB connection
         try:
-            client = MongoClient("mongodb://root:rootpassword@mongodb-0.mongodb:27017")
+            client = MongoClient("mongodb://root:rootpassword@mongodb-0.mongodb:27017?authSource=admin")
             db_videos = client.videos
             db_mp3s = client.mp3s
             fs_videos = gridfs.GridFS(db_videos)

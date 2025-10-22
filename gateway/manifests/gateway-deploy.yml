@@ -12,12 +12,26 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: 3
+      maxSurge: 2
   template:
     metadata:
       labels:
         app: gateway
     spec:
+      # 🪶 UPDATED: Added initContainer to wait for RabbitMQ readiness
+      initContainers:
+        - name: wait-for-rabbitmq
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              echo "🐇 Waiting for RabbitMQ to be ready..."
+              until nc -z rabbitmq 5672; do
+                echo "⏳ RabbitMQ not ready yet..."
+                sleep 3
+              done
+              echo "✅ 🐇 RabbitMQ server is ready!"
       containers:
         - name: gateway
           image: zoeharris168/gateway
@@ -26,7 +40,6 @@ spec:
                 name: gateway-configmap
             - secretRef:
                 name: gateway-secret
-
 ---
 apiVersion: v1
 kind: Service
