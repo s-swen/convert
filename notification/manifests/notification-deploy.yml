@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: notification
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+  template:
+    metadata:
+      labels:
+        app: notification
+    spec:
+      # 🪶 UPDATED: Added initContainer to wait for RabbitMQ readiness
+      initContainers:
+        - name: wait-for-rabbitmq
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              echo "🐇 Waiting for RabbitMQ to be ready..."
+              until nc -z rabbitmq 5672; do
+                echo "⏳ RabbitMQ not ready yet..."
+                sleep 3
+              done
+              echo "✅ 🐇 RabbitMQ server is ready!"
+      containers:
+        - name: notification
+          image: zoeharris168/notification
+          envFrom:
+            - configMapRef:
+                name: notification-configmap
+            - secretRef:
+                name: notification-secret
